@@ -1,18 +1,19 @@
-import com.sun.xml.internal.ws.api.server.EndpointReferenceExtensionContributor;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.util.ArrayList;
 
 
 public class Main extends Application {
@@ -21,15 +22,24 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
+        ArrayList<Utilisateur> tableauDonnée= new ArrayList<>();
 
         stage.setWidth(700);
         stage.setHeight(900);
+
+        final boolean[] check = {false};
 
         Label wrong = new Label();
         wrong.setTextFill(Color.RED);
         wrong.setTranslateX(300);
         wrong.setTranslateY(440);
         wrong.setPrefSize(400,20);
+
+        Label wrong1 = new Label("");
+        wrong1.setTextFill(Color.RED);
+        wrong1.setTranslateX(300);
+        wrong1.setTranslateY(520);
+        wrong1.setPrefSize(400,20);
 
         Label nomUtilisateur = new Label("Nom d'utilisateur");
         nomUtilisateur.setPrefSize(100,20);
@@ -142,10 +152,11 @@ public class Main extends Application {
         Group rootInscription = new Group(wrong,Iprenom,iPre,INDF,iNomDeFamille,INomUti,iNomUtilisateur,Imdp,iMotDePasse,IConfirm,iMDPC, genre,homme,femme,autre,age,Iage,condition);
         Scene inscrip = new Scene(rootInscription);
         Button inscription = new Button("S'inscrire");
-        inscription.setTranslateX(390);
+        inscription.setTranslateX(410);
         inscription.setTranslateY(480);
         inscription.setPrefSize(70,20);
         inscription.setOnAction((event)->{
+            wrong1.setText("");
             stage.setScene(inscrip);
         });
         Group chargement = new Group();
@@ -155,11 +166,27 @@ public class Main extends Application {
         connection.setTranslateX(300);
         connection.setTranslateY(480);
         connection.setPrefSize(90,20);
-        connection.setOnAction((event)->{
-            stage.setScene(charg);
+        connection.setOnAction(( event) ->{
+            for (int i=0;i<tableauDonnée.size();i++){
+                if (tableauDonnée.get(i).getNomUtilisateur().toString().equals(nomUtilisateur.toString())) { //MARCHE PASSSSSSS/**********************************************************
+                    check[0]=true;
+                }
+            }
+            if (tableauDonnée.size()==0){
+                wrong1.setText("La connexion a échoué.");
+            }
+            else if (check[0]){
+                check[0] = false;
+                wrong1.setText("");
+                stage.setScene(charg);
+            }
+            else {
+                wrong1.setText("Votre nom d'utilisateur n'est pas bon");
+            }
+
         });
 
-        Group rootLogin = new Group(nomUtilisateur,username,password,mdp,inscription,connection);
+        Group rootLogin = new Group(nomUtilisateur,username,password,mdp,inscription,connection,wrong1);
         Scene login=new Scene(rootLogin);
 
         Button IInscription = new Button("S'inscrire");
@@ -168,6 +195,7 @@ public class Main extends Application {
         IInscription.setTranslateX(300);
         IInscription.setTranslateY(410);
         IInscription.setOnAction((event)->{
+            Utilisateur uti = new Utilisateur();
             if (iPre.getText().equals("")){
                 wrong.setText("Vous n'avez pas entrer de prénom");
             }
@@ -186,20 +214,34 @@ public class Main extends Application {
             else if (!iMotDePasse.getText().equals(iMDPC.getText())){
                 wrong.setText("Les mot de passe ne correspondent pas");
             }
-            else if (!homme.isSelected()&& !femme.isSelected() && !autre.isSelected()){
+            else if (groupe.getSelectedToggle()==null){
                 wrong.setText("Vous n'avez pas sélectionner de genre");
             }
             else if (!condition.isSelected()){
                 wrong.setText("Vous n'avez pas accepter les conditions d'utilisation");
             }
             else {
+                uti.setNom(iPre);
                 iPre.clear();
+                uti.setNomDeFamille(iNomDeFamille);
                 iNomDeFamille.clear();
+                uti.setNomUtilisateur(iNomUtilisateur);
                 iNomUtilisateur.clear();
+                uti.setMdp(iMDPC);
+                uti.setCmdp(iMDPC);
                 iMotDePasse.clear();
                 iMDPC.clear();
-                groupe.getSelectedToggle().setSelected(false);
+                RadioButton selectedRadioButton = (RadioButton) groupe.getSelectedToggle();
+                String toogleGroupValue = selectedRadioButton.getText();
+                uti.setGenre(toogleGroupValue);
+                if (groupe.getSelectedToggle()!=null){
+                    groupe.getSelectedToggle().setSelected(false);
+                }
+                uti.setAge(Iage.getValueFactory());
+                Iage.getValueFactory().setValue(18);
                 condition.setSelected(false);
+                wrong.setText("");
+                tableauDonnée.add(uti);
                 stage.setScene(login);
             }
 
@@ -210,6 +252,20 @@ public class Main extends Application {
         effacer.setTranslateX(400);
         effacer.setPrefSize(100,20);
         rootInscription.getChildren().add(effacer);
+        effacer.setOnAction((event)->{
+            iPre.clear();
+            iNomDeFamille.clear();
+            iNomUtilisateur.clear();
+            iMotDePasse.clear();
+            iMDPC.clear();
+            if (groupe.getSelectedToggle()!=null){
+                groupe.getSelectedToggle().setSelected(false);
+            }
+
+            Iage.getValueFactory().setValue(18);
+            condition.setSelected(false);
+            wrong.setText("");
+        });
 
         Button retour = new Button("Retour");
         retour.setTranslateX(500);
