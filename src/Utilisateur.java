@@ -5,51 +5,52 @@ import javafx.scene.control.TextField;
 import java.awt.*;
 
 public class Utilisateur {
-    TextField nom;
-    TextField nomDeFamille;
-    TextField nomUtilisateur;
-    TextField Mdp;
-    TextField Cmdp;
+    String nom;
+    String nomDeFamille;
+    String nomUtilisateur;
+    String Mdp;
+    String Cmdp;
     String genre;
-    SpinnerValueFactory age;
+    int age;
+    byte MdpCharactere[];
 
-    public TextField getNom() {
+    public String getNom() {
         return nom;
     }
 
-    public void setNom(TextField nom) {
+    public void setNom(String nom) {
         this.nom = nom;
     }
 
-    public TextField getNomDeFamille() {
+    public String getNomDeFamille() {
         return nomDeFamille;
     }
 
-    public void setNomDeFamille(TextField nomDeFamille) {
+    public void setNomDeFamille(String nomDeFamille) {
         this.nomDeFamille = nomDeFamille;
     }
 
-    public TextField getNomUtilisateur() {
+    public String getNomUtilisateur() {
         return nomUtilisateur;
     }
 
-    public void setNomUtilisateur(TextField nomUtilisateur) {
+    public void setNomUtilisateur(String nomUtilisateur) {
         this.nomUtilisateur = nomUtilisateur;
     }
 
-    public TextField getMdp() {
+    public String getMdp() {
         return Mdp;
     }
 
-    public void setMdp(TextField mdp) {
+    public void setMdp(String mdp) {
         Mdp = mdp;
     }
 
-    public TextField getCmdp() {
+    public String getCmdp() {
         return Cmdp;
     }
 
-    public void setCmdp(TextField cmdp) {
+    public void setCmdp(String cmdp) {
         Cmdp = cmdp;
     }
 
@@ -61,11 +62,19 @@ public class Utilisateur {
         this.genre = genre;
     }
 
-    public SpinnerValueFactory getAge() {
+    public int getAge() {
         return age;
     }
 
-    public void setAge(SpinnerValueFactory age) {
+    public void setAge(int age) {
         this.age = age;
+    }
+
+    public byte[] getMdpCharactere() {
+        return MdpCharactere;
+    }
+
+    public void setMdpCharactere(byte[] mdpCharactere) {
+        MdpCharactere = mdpCharactere;
     }
 }

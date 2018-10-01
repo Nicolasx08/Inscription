@@ -3,7 +3,6 @@ import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -12,8 +11,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Main extends Application {
@@ -21,13 +25,15 @@ public class Main extends Application {
     public static void main(String[] args) {launch();}
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         ArrayList<Utilisateur> tableauDonnée= new ArrayList<>();
-
+        load(tableauDonnée);
         stage.setWidth(700);
         stage.setHeight(900);
 
-        final boolean[] check = {false};
+        final boolean[] check = {false,false,false,false,false};
+        final boolean[] check1 = {false,false,false,false,false};
+
 
         Label wrong = new Label();
         wrong.setTextFill(Color.RED);
@@ -40,6 +46,12 @@ public class Main extends Application {
         wrong1.setTranslateX(300);
         wrong1.setTranslateY(520);
         wrong1.setPrefSize(400,20);
+
+        Label save = new Label("");
+        save.setTextFill(Color.RED);
+        save.setTranslateX(300);
+        save.setTranslateY(520);
+        save.setPrefSize(400,20);
 
         Label nomUtilisateur = new Label("Nom d'utilisateur");
         nomUtilisateur.setPrefSize(100,20);
@@ -168,25 +180,46 @@ public class Main extends Application {
         connection.setPrefSize(90,20);
         connection.setOnAction(( event) ->{
             for (int i=0;i<tableauDonnée.size();i++){
-                if (tableauDonnée.get(i).getNomUtilisateur().toString().equals(nomUtilisateur.toString())) { //MARCHE PASSSSSSS/**********************************************************
-                    check[0]=true;
+                if (tableauDonnée.get(i).getNomUtilisateur().equals(username.getText())) {
+                    check[i]=true;
+                }
+                if (hashing(mdp.getText()).equals(tableauDonnée.get(i).getMdp())){
+                    check1[i]=true;
                 }
             }
             if (tableauDonnée.size()==0){
-                wrong1.setText("La connexion a échoué.");
+                wrong1.setText("La connexion a échoué. Vous n'avez aucun utilisateur d'inscrit.");
             }
-            else if (check[0]){
-                check[0] = false;
-                wrong1.setText("");
-                stage.setScene(charg);
+            for (int i=0;i<tableauDonnée.size();i++){
+
+                if (check[i] && check1[i]){
+                    check[i] = false;
+                    check1[i]=false;
+                    wrong1.setText("");
+                    save.setText("");
+                    stage.setScene(charg);
+                }
+                else if (check1[i] && !check[i]){
+                    wrong1.setText("Votre nom d'utilisateur n'est pas bon");
+                    check1[i]=false;
+                    check[i]=false;
+                }
+                else if (check[i] && !check1[i]){
+                    wrong1.setText("Votre mot de passe n'est pas bon");
+                    check1[i]=false;
+                    check[i]=false;
+                }
+                else {
+                        save.setText(wrong1.getText());
+                        wrong1.setText(save.getText());
+                }
+
             }
-            else {
-                wrong1.setText("Votre nom d'utilisateur n'est pas bon");
-            }
+
 
         });
 
-        Group rootLogin = new Group(nomUtilisateur,username,password,mdp,inscription,connection,wrong1);
+        Group rootLogin = new Group(nomUtilisateur,username,password,mdp,inscription,connection,wrong1,save);
         Scene login=new Scene(rootLogin);
 
         Button IInscription = new Button("S'inscrire");
@@ -221,23 +254,26 @@ public class Main extends Application {
                 wrong.setText("Vous n'avez pas accepter les conditions d'utilisation");
             }
             else {
-                uti.setNom(iPre);
-                iPre.clear();
-                uti.setNomDeFamille(iNomDeFamille);
-                iNomDeFamille.clear();
-                uti.setNomUtilisateur(iNomUtilisateur);
-                iNomUtilisateur.clear();
-                uti.setMdp(iMDPC);
-                uti.setCmdp(iMDPC);
-                iMotDePasse.clear();
-                iMDPC.clear();
+                uti.setNom(iPre.getText());
+                uti.setNomDeFamille(iNomDeFamille.getText());
+                uti.setNomUtilisateur(iNomUtilisateur.getText());
+                iMDPC.setText(hashing(iMDPC.getText()));
+                uti.setMdp(iMDPC.getText());
+                uti.setCmdp(iMDPC.getText());
                 RadioButton selectedRadioButton = (RadioButton) groupe.getSelectedToggle();
                 String toogleGroupValue = selectedRadioButton.getText();
                 uti.setGenre(toogleGroupValue);
+                uti.setAge((int)Iage.getValueFactory().getValue());
+                tableauDonnée.add(uti);
+                inscriptionMethod(uti);
+                iPre.clear();
+                iNomDeFamille.clear();
+                iNomUtilisateur.clear();
+                iMotDePasse.clear();
+                iMDPC.clear();
                 if (groupe.getSelectedToggle()!=null){
                     groupe.getSelectedToggle().setSelected(false);
                 }
-                uti.setAge(Iage.getValueFactory());
                 Iage.getValueFactory().setValue(18);
                 condition.setSelected(false);
                 wrong.setText("");
@@ -341,6 +377,54 @@ public class Main extends Application {
 
         stage.setScene(login);
         stage.show();
+    }
+
+    public void load(ArrayList liste) {
+        try {
+            List<String> allLines = Files.readAllLines(Paths.get("Excel.csv"));
+            String var;
+            for (int i = 0; (var = allLines.get(i)) != null; i++) {
+                String[] partie = var.split(",");
+                Utilisateur user = new Utilisateur();
+                user.setNom(partie[0]);
+                user.setNomDeFamille(partie[1]);
+                user.setNomUtilisateur(partie[2]);
+                user.setMdp(partie[3]);
+                user.setCmdp(partie[3]);
+                user.setGenre(partie[4]);
+                user.setAge(Integer.parseInt(partie[5]));
+                liste.add(user);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+    public String hashing(String string) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(string.getBytes("UTF-8"));
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    public void inscriptionMethod(Utilisateur user){
+        File file = new File("Excel.csv");
+        String   csv = user.getNom()+","+user.getNomDeFamille()+","+user.getNomUtilisateur()+","+ user.getMdp()+","+user.getGenre()+","+user.getAge()+'\n';
+        try {
+            if (file.exists())
+                Files.write(Paths.get("Excel.csv"), csv.getBytes(), StandardOpenOption.APPEND);
+            else
+                Files.write(Paths.get("Excel.csv"), csv.getBytes(), StandardOpenOption.CREATE);
+        } catch (IOException e) {
+
+        }
     }
 
 }
