@@ -18,6 +18,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class Main extends Application {
@@ -221,65 +222,77 @@ public class Main extends Application {
 
         Group rootLogin = new Group(nomUtilisateur,username,password,mdp,inscription,connection,wrong1,save);
         Scene login=new Scene(rootLogin);
-
+        AtomicBoolean correct = new AtomicBoolean(true);
         Button IInscription = new Button("S'inscrire");
         rootInscription.getChildren().add(IInscription);
         IInscription.setPrefSize(100,20);
         IInscription.setTranslateX(300);
         IInscription.setTranslateY(410);
         IInscription.setOnAction((event)->{
+
             Utilisateur uti = new Utilisateur();
-            if (iPre.getText().equals("")){
-                wrong.setText("Vous n'avez pas entrer de prénom");
-            }
-            else if (iNomDeFamille.getText().equals("")){
-                wrong.setText("Vous n'avez pas entrer de nom de famille");
-            }
-            else if (iNomUtilisateur.getText().equals("")){
-                wrong.setText("Vous n'avez pas entrer de nom d'utilisateur");
-            }
-            else if (iMotDePasse.getText().equals("")){
-                wrong.setText("Vous n'avez pas entrer de mot de passe");
-            }
-            else if (iMDPC.getText().equals("")){
-                wrong.setText("Vous n'avez rien entrer dans confirmation de mot de passe");
-            }
-            else if (!iMotDePasse.getText().equals(iMDPC.getText())){
-                wrong.setText("Les mot de passe ne correspondent pas");
-            }
-            else if (groupe.getSelectedToggle()==null){
-                wrong.setText("Vous n'avez pas sélectionner de genre");
-            }
-            else if (!condition.isSelected()){
-                wrong.setText("Vous n'avez pas accepter les conditions d'utilisation");
-            }
-            else {
-                uti.setNom(iPre.getText());
-                uti.setNomDeFamille(iNomDeFamille.getText());
-                uti.setNomUtilisateur(iNomUtilisateur.getText());
-                iMDPC.setText(hashing(iMDPC.getText()));
-                uti.setMdp(iMDPC.getText());
-                uti.setCmdp(iMDPC.getText());
-                RadioButton selectedRadioButton = (RadioButton) groupe.getSelectedToggle();
-                String toogleGroupValue = selectedRadioButton.getText();
-                uti.setGenre(toogleGroupValue);
-                uti.setAge((int)Iage.getValueFactory().getValue());
-                tableauDonnée.add(uti);
-                inscriptionMethod(uti);
-                iPre.clear();
-                iNomDeFamille.clear();
-                iNomUtilisateur.clear();
-                iMotDePasse.clear();
-                iMDPC.clear();
-                if (groupe.getSelectedToggle()!=null){
-                    groupe.getSelectedToggle().setSelected(false);
+            correct.set(true);
+            for (int i=0;i<tableauDonnée.size();i++){
+                if (iNomUtilisateur.getText().equals(tableauDonnée.get(i).getNom())){
+                    wrong.setText("Le nom d'utilisateur est déjà pris");
+                    correct.set(false);
                 }
-                Iage.getValueFactory().setValue(18);
-                condition.setSelected(false);
-                wrong.setText("");
-                tableauDonnée.add(uti);
-                stage.setScene(login);
             }
+
+            while (correct.get()){
+                if (iPre.getText().equals("")){
+                    wrong.setText("Vous n'avez pas entrer de prénom");
+                }
+                else if (iNomDeFamille.getText().equals("")){
+                    wrong.setText("Vous n'avez pas entrer de nom de famille");
+                }
+                else if (iNomUtilisateur.getText().equals("")){
+                    wrong.setText("Vous n'avez pas entrer de nom d'utilisateur");
+                }
+                else if (iMotDePasse.getText().equals("")){
+                    wrong.setText("Vous n'avez pas entrer de mot de passe");
+                }
+                else if (iMDPC.getText().equals("")){
+                    wrong.setText("Vous n'avez rien entrer dans confirmation de mot de passe");
+                }
+                else if (!iMotDePasse.getText().equals(iMDPC.getText())){
+                    wrong.setText("Les mot de passe ne correspondent pas");
+                }
+                else if (groupe.getSelectedToggle()==null){
+                    wrong.setText("Vous n'avez pas sélectionner de genre");
+                }
+                else if (!condition.isSelected()){
+                    wrong.setText("Vous n'avez pas accepter les conditions d'utilisation");
+                }
+                else {
+                    uti.setNom(iPre.getText());
+                    uti.setNomDeFamille(iNomDeFamille.getText());
+                    uti.setNomUtilisateur(iNomUtilisateur.getText());
+                    iMDPC.setText(hashing(iMDPC.getText()));
+                    uti.setMdp(iMDPC.getText());
+                    RadioButton selectedRadioButton = (RadioButton) groupe.getSelectedToggle();
+                    String toogleGroupValue = selectedRadioButton.getText();
+                    uti.setGenre(toogleGroupValue);
+                    uti.setAge((int)Iage.getValueFactory().getValue());
+                    tableauDonnée.add(uti);
+                    inscriptionMethod(uti);
+                    iPre.clear();
+                    iNomDeFamille.clear();
+                    iNomUtilisateur.clear();
+                    iMotDePasse.clear();
+                    iMDPC.clear();
+                    if (groupe.getSelectedToggle()!=null){
+                        groupe.getSelectedToggle().setSelected(false);
+                    }
+                    Iage.getValueFactory().setValue(18);
+                    condition.setSelected(false);
+                    wrong.setText("");
+                    tableauDonnée.add(uti);
+                    correct.set(false);
+                    stage.setScene(login);
+                }
+            }
+
 
         });
 
@@ -390,7 +403,6 @@ public class Main extends Application {
                 user.setNomDeFamille(partie[1]);
                 user.setNomUtilisateur(partie[2]);
                 user.setMdp(partie[3]);
-                user.setCmdp(partie[3]);
                 user.setGenre(partie[4]);
                 user.setAge(Integer.parseInt(partie[5]));
                 liste.add(user);

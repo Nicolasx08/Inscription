@@ -9,10 +9,8 @@ public class Utilisateur {
     String nomDeFamille;
     String nomUtilisateur;
     String Mdp;
-    String Cmdp;
     String genre;
     int age;
-    byte MdpCharactere[];
 
     public String getNom() {
         return nom;
@@ -46,14 +44,6 @@ public class Utilisateur {
         Mdp = mdp;
     }
 
-    public String getCmdp() {
-        return Cmdp;
-    }
-
-    public void setCmdp(String cmdp) {
-        Cmdp = cmdp;
-    }
-
     public String getGenre() {
         return genre;
     }
@@ -70,11 +60,4 @@ public class Utilisateur {
         this.age = age;
     }
 
-    public byte[] getMdpCharactere() {
-        return MdpCharactere;
-    }
-
-    public void setMdpCharactere(byte[] mdpCharactere) {
-        MdpCharactere = mdpCharactere;
-    }
 }
